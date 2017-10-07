@@ -1,0 +1,26 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "rules": {
+    // Code style
+    "brace-style": [2, "1tbs"],
+    "quotes": ["warn", "double"],
+    "keyword-spacing": [2, {"before":true}],
+    "space-unary-ops": [2, {"words": true}],
+    // Best practices
+    "curly": 0,
+    "eqeqeq": [2, "smart"],
+    "no-floating-decimal": 2,
+    // Possible errors
+    "no-comma-dangle": 0,
+    "no-use-before-define": [2, "nofunc"],
+    // Strict mode
+    "strict": 0
+  }
+  , "parserOptions": {
+    "ecmaVersion": 2016
+  }
+}
