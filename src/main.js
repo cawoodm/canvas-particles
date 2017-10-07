@@ -2,6 +2,7 @@ var raf = require("./raf");
 var rng = require("./rng");
 var f = require("./functions");
 var Explosion = require("./explosion");
+var Fish = require("./fish");
 
 var canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -71,7 +72,7 @@ function createBalls(o) {
   }
 }
 canvas.addEventListener("click", function(e) {
-  entities.push(new Explosion({x: e.clientX, y: e.clientY, dd: 300, hue: rand.range(0, 360)}));
+  entities.push(new Explosion({x: e.clientX, y: e.clientY, num: rand.range(100, 1500), gravity: 20, dd: 130, hue: rand.range(0, 360)}));
 });
 
 raf.start(function(elapsed) {
@@ -91,7 +92,7 @@ raf.start(function(elapsed) {
   }
 
   objs.forEach(function(obj, index, object) {
-    
+    return
     // Lifetime
     obj.lifecount += elapsed * 50;
     obj.alpha = 1-obj.lifecount/obj.lifetime;

@@ -21,7 +21,7 @@ PAUSE
 :: Publish to github
 CD %PUB%
 git add .
-git commit -m "%STR%""
+git commit -m "%STR%"
 git push origin master
 ECHO "Ready to test at http://cawoodm.github.io/canvas-particles/
 START http://cawoodm.github.io/canvas-particles/
