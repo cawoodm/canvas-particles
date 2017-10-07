@@ -1,6 +1,7 @@
 var raf = require("./raf");
 var rng = require("./rng");
 var f = require("./functions");
+var Explosion = require("./explosion");
 
 var canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -18,6 +19,8 @@ osc.push({a:rand.float(1)})
 osc.push({a:rand.float(1)})
 let gravity = g.gravity = {l:100, x:canvas.width/2, y:canvas.height/2, f:10000, ans:0.01, d:1};
 oscillate(osc[0]);
+entities=[];
+entities.push(new Explosion({x: canvas.width/2, y: canvas.height/2, hue: rand.range(0, 360)}));
 createBalls();
 setInterval(()=>createBalls(), 1500)
 setInterval(()=>oscillate(osc[0]), 5000)
@@ -66,10 +69,9 @@ function createBalls(o) {
       ,hue: o.hue
     });
   }
-  dp(o)
 }
 canvas.addEventListener("click", function(e) {
-  createBalls({x: e.clientX, y: e.clientY, h:180});
+  entities.push(new Explosion({x: e.clientX, y: e.clientY, dd: 300, hue: rand.range(0, 360)}));
 });
 
 raf.start(function(elapsed) {
@@ -88,66 +90,74 @@ raf.start(function(elapsed) {
   gravity.y =canvas.height/2+gravity.l*Math.sin(gravity.ang); 
   }
 
-  objs.forEach(function(entity, index, object) {
+  objs.forEach(function(obj, index, object) {
     
     // Lifetime
-    entity.lifecount += elapsed * 50;
-    entity.alpha = 1-entity.lifecount/entity.lifetime;
+    obj.lifecount += elapsed * 50;
+    obj.alpha = 1-obj.lifecount/obj.lifetime;
     
     // Kill
-    if (entity.lifecount>entity.lifetime) object.splice(index, 1);
-    if (entity.lifecount>entity.lifetime/2) entity.g=rand.pick([-1,0,1]);
+    if (obj.lifecount>obj.lifetime) object.splice(index, 1);
+    if (obj.lifecount>obj.lifetime/2) obj.g=rand.pick([-1,0,1]);
     
     // Gravity
-    if (entity.g!==0) {
-      let [dx, dy] = [gravity.x - entity.x, gravity.y - entity.y];
+    if (obj.g!==0) {
+      let [dx, dy] = [gravity.x - obj.x, gravity.y - obj.y];
       let dr = Math.max(10, Math.sqrt(dx**2/1000 + dy**2/1000));
       let [ax, ay] = [dx/Math.abs(dx), dy/Math.abs(dy)];
-      //entity.size = dr;
-      entity.dx += entity.g * elapsed * ax * gravity.f / dr**2;
-      entity.dy += entity.g * elapsed * ay * gravity.f / dr**2;
+      //obj.size = dr;
+      obj.dx += obj.g * elapsed * ax * gravity.f / dr**2;
+      obj.dy += obj.g * elapsed * ay * gravity.f / dr**2;
     }
     let max = {x: 0.5+200*osc[0].x/2, y: 0.5+200*osc[0].x/2};
-    entity.dx = entity.dx>0?Math.min(max.x, entity.dx):Math.max(-max.x, entity.dx);
-    entity.dy = entity.dy>0?Math.min(max.y, entity.dy):Math.max(-max.y, entity.dy);
+    obj.dx = obj.dx>0?Math.min(max.x, obj.dx):Math.max(-max.x, obj.dx);
+    obj.dy = obj.dy>0?Math.min(max.y, obj.dy):Math.max(-max.y, obj.dy);
     
     // Handle collision against the canvas's edges
-    if (osc[0].x>0.5) if (entity.x - entity.size < 0 && entity.dx < 0 || entity.x + entity.size > canvas.width && entity.dx > 0) entity.dx = -entity.dx * 0.7;
-    if (osc[0].y>0.5) if (entity.y - entity.size < 0 && entity.dy < 0 || entity.y + entity.size > canvas.height && entity.dy > 0) entity.dy = -entity.dy * 0.7;
+    if (osc[0].x>0.5) if (obj.x - obj.size < 0 && obj.dx < 0 || obj.x + obj.size > canvas.width && obj.dx > 0) obj.dx = -obj.dx * 0.7;
+    if (osc[0].y>0.5) if (obj.y - obj.size < 0 && obj.dy < 0 || obj.y + obj.size > canvas.height && obj.dy > 0) obj.dy = -obj.dy * 0.7;
 
-    // Update entity position
-    entity.x += entity.dx * elapsed;
-    entity.y += entity.dy * elapsed;
+    // Update obj position
+    obj.x += obj.dx * elapsed;
+    obj.y += obj.dy * elapsed;
 
     // Transparency
-    ctx.globalAlpha = entity.alpha;
+    ctx.globalAlpha = obj.alpha;
     
     // Color
-    if (osc[0].a>0.5 || entity.x<0) entity.hue.h = 360*entity.scale.x; else entity.hue.h = 360*entity.x/canvas.width;
-    ctx.fillStyle = `hsl(${entity.hue.h}, ${entity.hue.s}%, ${entity.hue.l}%)`;
+    if (osc[0].a>0.5 || obj.x<0) obj.hue.h = 360*obj.scale.x; else obj.hue.h = 360*obj.x/canvas.width;
+    ctx.fillStyle = `hsl(${obj.hue.h}, ${obj.hue.s}%, ${obj.hue.l}%)`;
     
     // Scale
-    entity.width = entity.size*entity.scale.x;
-    entity.height = entity.size*entity.scale.y;
+    obj.width = obj.size*obj.scale.x;
+    obj.height = obj.size*obj.scale.y;
     
     ctx.save();
-    ctx.translate(entity.x + entity.width/2, entity.y + entity.height/2);
-    if (entity.rot) ctx.rotate(720*entity.alpha*Math.PI/180);
-    //if (entity.scale) ctx.scale(entity.scale.x, entity.scale.y);
+    ctx.translate(obj.x + obj.width/2, obj.y + obj.height/2);
+    if (obj.rot) ctx.rotate(720*obj.alpha*Math.PI/180);
+    //if (obj.scale) ctx.scale(obj.scale.x, obj.scale.y);
     // Shape
-    if (entity.type==="o") {
+    if (obj.type==="o") {
       ctx.beginPath();
-      ctx.arc(0, 0, entity.size, 0, Math.PI * 2, true);
-      ctx.arc(entity.size/2, 0, entity.size, 0, Math.PI * 2, true);
-      ctx.arc(entity.size, 0, entity.size, 0, Math.PI * 2, true);
-      ctx.arc(entity.size*3/2, 0, entity.size, 0, Math.PI * 2, true);
+      ctx.arc(0, 0, obj.size, 0, Math.PI * 2, true);
+      ctx.arc(obj.size/2, 0, obj.size, 0, Math.PI * 2, true);
+      ctx.arc(obj.size, 0, obj.size, 0, Math.PI * 2, true);
+      ctx.arc(obj.size*3/2, 0, obj.size, 0, Math.PI * 2, true);
       ctx.closePath();
       ctx.fill();
     } else {
-      ctx.fillRect(0, 0, entity.width, entity.height);
-      ctx.fillRect(-entity.height/2, -entity.width/2, entity.height, entity.width);
-      //ctx.fillRect(entity.x, entity.y, entity.width, entity.height);
+      ctx.fillRect(0, 0, obj.width, obj.height);
+      ctx.fillRect(-obj.height/2, -obj.width/2, obj.height, obj.width);
+      //ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
     }
+    ctx.restore();
+  });
+
+  entities.forEach((ent, index)=>{
+    ent.update(elapsed);
+    if (ent.objs.length===0) return entities.splice(index, 1);
+    ctx.save();
+    ent.render(ctx);
     ctx.restore();
   });
 });
