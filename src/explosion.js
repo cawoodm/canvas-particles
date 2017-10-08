@@ -2,7 +2,7 @@ var rng = require("./rng");
 var rand = rng(Math.random());
 
 var Explosion = function(options) {
-  Object.assign(this, {x: 0, y:0, num: 200, hue: 120, size: 5, lifetime: 100, gravity: 2, dd: 100});
+  Object.assign(this, {x: 0, y:0, num: 200, dd: 100, hue: 120, size: 5, lifetime: 100, gravity: 2, dd: 100});
   Object.assign(this, options);
   this.objs = [];
   for (let i=0; i<this.num; i++) {
@@ -36,8 +36,8 @@ Explosion.prototype.update = function(delta) {
   });
 };
 Explosion.prototype.render = function(ctx) {
+  ctx.globalAlpha = this.objs[0].alpha;
   this.objs.forEach((obj, index) => {
-    ctx.globalAlpha = obj.alpha;
     ctx.fillStyle = `hsl(${obj.col.h}, ${obj.col.s}%, ${obj.col.l}%)`;
     ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
   });

@@ -10,7 +10,7 @@ var time = 0;
  */
 function raf(fn) {
   return window.requestAnimationFrame(function() {
-    var now = Date.now();
+    var now = window.performance.now();
     var elapsed = now - time;
 
     if (elapsed > 999) {

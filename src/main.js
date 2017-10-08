@@ -3,6 +3,8 @@ var rng = require("./rng");
 var f = require("./functions");
 var Explosion = require("./explosion");
 var Fish = require("./fish");
+var Bubbles = require("./bubbles");
+var Ocean = require("./ocean");
 
 var canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
@@ -12,7 +14,9 @@ var ctx = canvas.getContext("2d");
 
 var rand = rng(Math.random());
 var dp=f.dp;
-var g = window.g = {};
+var g = window.g = {
+  ticks: 0,
+};
 var objs = g.objs = [];
 var osc = g.osc = [];
 osc.push({a:rand.float(1)})
@@ -21,10 +25,24 @@ osc.push({a:rand.float(1)})
 let gravity = g.gravity = {l:100, x:canvas.width/2, y:canvas.height/2, f:10000, ans:0.01, d:1};
 oscillate(osc[0]);
 entities=[];
-entities.push(new Explosion({x: canvas.width/2, y: canvas.height/2, hue: rand.range(0, 360)}));
-createBalls();
-setInterval(()=>createBalls(), 1500)
-setInterval(()=>oscillate(osc[0]), 5000)
+entities.push(new Ocean({width: canvas.width, height: canvas.height}));
+function init(x, y, e) {
+  //if (rand.pick([true, false]))
+    //entities.push(new Explosion({x: y||canvas.width/2, y: canvas.height/2, hue: rand.range(0, 360)}));
+  //else
+  let makeFish = (e && e.ctrlKey) || rand.pick([false, false, false, true]);
+  if (makeFish)
+    entities.push(new Fish({x: x||rand.range(0, canvas.width/5), y: y||rand.range(0, canvas.height), lifetime: 2000, size:rand.range(1,9), num: rand.range(1,30), gravity: 0, dd: 50, hue: rand.range(0, 360)}));
+  else
+    entities.push(new Bubbles({x: x||rand.range(0, canvas.width), y: canvas.height, lifetime: 1200, gravity: -50, size:rand.range(3,10), num: rand.range(10,30), hue: rand.range(120, 260)}));
+};for (let i=0; i<10; i++) init();
+//createBalls();setInterval(()=>createBalls(), 1500)
+setInterval(()=>oscillate(osc[0]), 2000)
+canvas.addEventListener("click", function(e) {
+  init(e.clientX, e.clientY, e);
+});
+
+
 function oscillate(o) {
   o.a = ((10*++o.a)%10)/7;
   o.x=Math.cos(o.a);
@@ -71,17 +89,16 @@ function createBalls(o) {
     });
   }
 }
-canvas.addEventListener("click", function(e) {
-  entities.push(new Explosion({x: e.clientX, y: e.clientY, num: rand.range(100, 1500), gravity: 20, dd: 130, hue: rand.range(0, 360)}));
-});
 
 raf.start(function(elapsed) {
   // Clear the screen
-  ctx.fillStyle="black";
+  ctx.fillStyle="white";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  g.ticks++;
+  if (g.ticks%30===0) init();
+
   oscillate(osc[2])
-  
   if ((100*osc[0].a)%3===0) {}
   if (osc[0].a>0.7) {
   //ctx.fillStyle="red";ctx.fillRect(gravity.x, gravity.y, 10, 10);
@@ -156,7 +173,7 @@ raf.start(function(elapsed) {
 
   entities.forEach((ent, index)=>{
     ent.update(elapsed);
-    if (ent.objs.length===0) return entities.splice(index, 1);
+    if (ent.objs && ent.objs.length===0) return entities.splice(index, 1);
     ctx.save();
     ent.render(ctx);
     ctx.restore();
