@@ -26,9 +26,6 @@ Fish.prototype.update = function(delta) {
     obj.life += delta * 50;
     if (obj.life > this.lifetime) objs.splice(index, 1);
     
-    // Fade with age
-    obj.alpha = 1-obj.life/this.lifetime;
-
     // Physics and gravity
     obj.dy += this.gravity;
     obj.x += obj.dx * delta;

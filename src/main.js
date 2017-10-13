@@ -19,22 +19,22 @@ var g = window.g = {
 };
 var objs = g.objs = [];
 var osc = g.osc = [];
+let entities = g.entities =[];
 osc.push({a:rand.float(1)})
 osc.push({a:rand.float(1)})
 osc.push({a:rand.float(1)})
 let gravity = g.gravity = {l:100, x:canvas.width/2, y:canvas.height/2, f:10000, ans:0.01, d:1};
 oscillate(osc[0]);
-entities=[];
 entities.push(new Ocean({width: canvas.width, height: canvas.height}));
 function init(x, y, e) {
   //if (rand.pick([true, false]))
     //entities.push(new Explosion({x: y||canvas.width/2, y: canvas.height/2, hue: rand.range(0, 360)}));
   //else
-  let makeFish = (e && e.ctrlKey) || rand.pick([false, false, false, true]);
-  if (makeFish)
-    entities.push(new Fish({x: x||rand.range(0, canvas.width/5), y: y||rand.range(0, canvas.height), lifetime: 2000, size:rand.range(1,9), num: rand.range(1,30), gravity: 0, dd: 50, hue: rand.range(0, 360)}));
-  else
-    entities.push(new Bubbles({x: x||rand.range(0, canvas.width), y: canvas.height, lifetime: 1200, gravity: -50, size:rand.range(3,10), num: rand.range(10,30), hue: rand.range(120, 260)}));
+   let makeFish = (e && e.ctrlKey) || rand.pick([false, false, false, true]);
+   if (makeFish)
+     entities.push(new Fish({x: x||rand.range(0, canvas.width/5), y: y||rand.range(0, canvas.height), lifetime: 2000, size:rand.range(1,9), num: rand.range(1,30), gravity: 0, dd: 50, hue: rand.range(0, 360)}));
+   else
+    entities.push(new Bubbles({x: x||rand.range(0, canvas.width), y: canvas.height, height: canvas.height, lifetime: 1200, gravity: -50, size:rand.range(3,10), num: rand.range(10,30), hue: rand.range(120, 260)}));
 };for (let i=0; i<10; i++) init();
 //createBalls();setInterval(()=>createBalls(), 1500)
 setInterval(()=>oscillate(osc[0]), 2000)
